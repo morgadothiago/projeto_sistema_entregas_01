@@ -2,6 +2,51 @@ import { ApiProperty } from '@nestjs/swagger';
 import { DeliveryStatus } from '@prisma/client';
 import { Pagination } from '../../paginate/entity/pagination';
 
+export class AddressResponseDto {
+  @ApiProperty({
+    description: 'Rua do endereço',
+    example: 'Rua Exemplo',
+  })
+  street: string;
+
+  @ApiProperty({
+    description: 'Número do endereço',
+    example: '123',
+  })
+  number: string;
+
+  @ApiProperty({
+    description: 'Cidade',
+    example: 'São Paulo',
+  })
+  city: string;
+
+  @ApiProperty({
+    description: 'Estado',
+    example: 'SP',
+  })
+  state: string;
+
+  @ApiProperty({
+    description: 'CEP',
+    example: '12345-678',
+  })
+  zipCode: string;
+
+  @ApiProperty({
+    description: 'Complemento',
+    nullable: true,
+    example: 'Apto 101',
+  })
+  complement?: string;
+
+  @ApiProperty({
+    description: 'País',
+    example: 'Brasil',
+  })
+  country: string;
+}
+
 export class DeliveryPaginate {
   @ApiProperty({
     description: 'Código único da entrega',
@@ -86,6 +131,27 @@ export class DeliveryPaginate {
     example: 'Carro',
   })
   vehicleType: string;
+
+  @ApiProperty({
+    description: 'Endereço do cliente',
+    type: AddressResponseDto,
+  })
+  ClientAddress: AddressResponseDto;
+
+  @ApiProperty({
+    description: 'Endereço de origem',
+    type: AddressResponseDto,
+  })
+  OriginAddress: AddressResponseDto;
+
+  @ApiProperty({
+    description: 'Informações da empresa',
+    type: Object,
+    example: { name: 'Empresa Exemplo' },
+  })
+  Company: {
+    name: string;
+  };
 }
 
 export class DeliveryPaginateResponse extends Pagination<DeliveryPaginate> {

@@ -14,17 +14,14 @@ import { RateLimitMiddleware } from './rate-limit/rate-limit.middleware';
 import { BillingModule } from './billing/billing.module';
 import { FileStorageModule } from './file-storage/file-storage.module';
 import { FileStorageService } from './file-storage/file-storage.service';
+import { jwtModuleConfig } from './config/jwt.config';
 
 @Module({
   imports: [
     AuthModule,
     GpsModule,
     JwtModule.registerAsync({
-      useFactory: () => ({
-        global: true,
-        secret: process.env.JWT_SECRET,
-        signOptions: { expiresIn: process.env.JWT_EXPIRATION },
-      }),
+      useFactory: jwtModuleConfig,
     }),
     VehicleTypeModule,
     DeliveryModule,

@@ -97,7 +97,7 @@ export class AuthService {
     return this.prisma.$transaction(async (tx) => {
       const vehicleType = await tx.vehicleType.findFirst({
         where: { type: deliveryman.vehicleType },
-        select: { id: true },
+        select: { id: true, type: true },
       });
 
       if (!vehicleType?.id) {
@@ -105,6 +105,17 @@ export class AuthService {
       }
 
       const vehicleTypeId = vehicleType.id;
+      const requiresDocument =
+        (vehicleType.type ?? '').toLowerCase() !== 'bike';
+      const initialStatus = requiresDocument
+        ? (UserStatus.NO_DOCUMENTS as UserStatus)
+        : UserStatus.ACTIVE;
+      const initialInformation = requiresDocument
+        ? `
+          ### Sistema
+          - Aguardando documentos
+          - Aguardando desbloqueio`
+        : 'Cadastro liberado automaticamente';
 
       const existingVehicle = await tx.vehicle.findFirst({
         where: { licensePlate: deliveryman.licensePlate },
@@ -180,11 +191,8 @@ export class AuthService {
           email: deliveryman.email,
           password: hashedPassword,
           role: Role.DELIVERY,
-          status: UserStatus.NO_DOCUMENTS as UserStatus,
-          information: `
-          ### Sistema
-          - Aguardando documentos
-          - Aguardando desbloqueio`,
+          status: initialStatus,
+          information: initialInformation,
           DeliveryMan: {
             create: {
               dob: new Date(deliveryman.dob),

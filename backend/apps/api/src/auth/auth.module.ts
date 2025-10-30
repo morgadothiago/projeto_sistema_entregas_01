@@ -5,16 +5,13 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { AuthController } from './auth.controller';
 import { LocationService } from '../location/location.service';
 import { CacheService } from '../cache/cache.service';
+import { jwtModuleConfig } from '../config/jwt.config';
 
 @Module({
   imports: [
     PrismaModule,
     JwtModule.registerAsync({
-      useFactory: () => ({
-        global: true,
-        secret: process.env.JWT_SECRET,
-        signOptions: { expiresIn: process.env.JWT_EXPIRATION },
-      }),
+      useFactory: jwtModuleConfig,
     }),
   ],
   controllers: [AuthController],

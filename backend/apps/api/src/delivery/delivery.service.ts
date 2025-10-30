@@ -8,7 +8,7 @@ import { DeliverySimulateDto } from "./dto/delivery-simulate.dto"
 import { PrismaService } from "../prisma/prisma.service"
 import { VehicleTypeService } from "../vehicle-type/vehicle-type.service"
 import { LocationService } from "../location/location.service"
-import { DeliveryStatus, Prisma, VehicleType } from "@prisma/client"
+import { DeliveryStatus, Prisma, Role, VehicleType } from "@prisma/client"
 import { createCode, paginateResponse } from "../utils/fn"
 import { CacheService } from "../cache/cache.service"
 import { DeliverySimulationResponseDto } from "./dto/delivery-simulation-response.dto"
@@ -30,6 +30,13 @@ export class DeliveryService {
     limit: number
   ): Promise<DeliveryPaginateResponse> {
     const where: Prisma.DeliveryWhereInput = {
+      ...(filter.user.role !== Role.ADMIN && {
+        Company: {
+          is: {
+            idUser: filter.user.id,
+          },
+        },
+      }),
       ...(filter.code && {
         code: {
           contains: filter.code,
@@ -95,6 +102,8 @@ export class DeliveryService {
               name: true,
             },
           },
+          ClientAddress: true,
+          OriginAddress: true,
         },
       }),
       this.prismaService.delivery.count({
@@ -287,7 +296,11 @@ export class DeliveryService {
     const delivery = await this.prismaService.delivery.findFirst({
       where: {
         code,
-        companyId: userId,
+        Company: {
+          is: {
+            idUser: userId,
+          },
+        },
       },
       include: {
         Company: {

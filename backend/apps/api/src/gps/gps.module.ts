@@ -4,16 +4,13 @@ import { GpsService } from './gps.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { GpsGateway } from './gps.gateway';
 import { JwtModule } from '@nestjs/jwt';
+import { jwtModuleConfig } from '../config/jwt.config';
 
 @Module({
   imports: [
     PrismaModule,
     JwtModule.registerAsync({
-      useFactory: () => ({
-        global: true,
-        secret: process.env.JWT_SECRET,
-        signOptions: { expiresIn: process.env.JWT_EXPIRATION },
-      }),
+      useFactory: jwtModuleConfig,
     }),
   ],
   controllers: [GpsController],
