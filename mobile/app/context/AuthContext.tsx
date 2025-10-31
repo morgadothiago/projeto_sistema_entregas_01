@@ -1,7 +1,7 @@
-import AsyncStorage from "@react-native-async-storage/async-storage"
 import React, { createContext, useContext, useEffect, useState } from "react"
 import { api, login } from "../service/api"
 import { ApiResponse } from "../types/ApiResponse"
+import { getItem, removeItem, saveItem } from "../helpers/Storage"
 
 type AuthContextData = {
   user: ApiResponse | null
@@ -17,19 +17,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<ApiResponse | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-
-  // Helpers do AsyncStorage
-  async function saveItem(key: string, value: string) {
-    await AsyncStorage.setItem(key, value)
-  }
-
-  async function getItem(key: string) {
-    return await AsyncStorage.getItem(key)
-  }
-
-  async function removeItem(key: string) {
-    await AsyncStorage.removeItem(key)
-  }
 
   // 🔹 Carrega token e usuário do AsyncStorage ao iniciar o app
   useEffect(() => {
@@ -76,7 +63,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await saveItem("@token", responseToken)
       await saveItem("@user", JSON.stringify(userData))
 
-      console.log("Token salvo com sucesso:", responseToken)
+      console.log("Token salvo com sucesso:", userData)
+
+      console.log("Dados vindo do async storage:" + (await getItem("@token")))
     } catch (error: any) {
       console.log("Erro no login:", error.response?.data || error.message)
       throw error

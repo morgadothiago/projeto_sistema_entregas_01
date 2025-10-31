@@ -22,8 +22,7 @@ import fundoLogo from "../../assets/funndo.png"
 import Logo from "../../assets/logo.png"
 import Input from "../../components/Input"
 import { loginSchema } from "../../schema/loginSchema"
-import { api, login } from "../../service/api"
-import { FormData } from "../../types/FormData"
+
 import styles from "./styles"
 import { useAuth } from "@/app/context/AuthContext"
 

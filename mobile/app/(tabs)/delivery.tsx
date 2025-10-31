@@ -19,9 +19,6 @@ export default function Delivery() {
     getAllDeliverys()
   }, [token])
 
-  const testeToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzYxMTg4OTE4LCJleHAiOjE3NjEyMTc3MTh9.CqLeXF4QcSMDHNCnrSyS-09dsh2Ncn0w74xb5hZsBss"
-
   const router = useRouter()
   const [orders, setOrders] = useState<ApiOrder[]>([])
 
@@ -34,7 +31,7 @@ export default function Delivery() {
           Authorization: `Bearer ${token}`,
         },
       })
-      console.log("response:", response.data.data)
+      console.log("response:", response.data)
       setOrders(response.data.data)
     } catch (error) {
       console.error("Erro ao buscar entregas:", error)

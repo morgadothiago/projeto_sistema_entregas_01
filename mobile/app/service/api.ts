@@ -16,12 +16,16 @@ interface LoginResponse {
 
 // -------------------- INSTÂNCIA AXIOS --------------------
 const api = Axios.create({
-  baseURL: "http://192.168.100.95:3000",
+  baseURL:
+    process.env.DEVELOPMENT_BASE_URL ||
+    process.env.PRODUCTION_BASE_URL ||
+    "http://localhost:3000",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
     "User-Agent": "IEMobile",
   },
+  timeout: 10000, // 10 segundos
 })
 
 // -------------------- LOGIN --------------------
@@ -85,7 +89,7 @@ export async function newAccount(data: any) {
 
     return response.data
   } catch (error: any) {
-    console.error(
+    console.log(
       "Erro ao criar nova conta:",
       error.response?.data || error.message
     )
@@ -176,7 +180,7 @@ api.interceptors.request.use(
     return config
   },
   (error) => {
-    console.error("Erro ao enviar requisição:", error)
+    console.log("Erro ao enviar requisição:", error)
     return Promise.reject(error)
   }
 )
