@@ -108,7 +108,8 @@ export class DeliveryQueryParams {
   @ApiProperty({
     description: "Número da página",
     required: false,
-    default: "1",
+    default: 1,
+    type: Number,
   })
   @IsOptional()
   @Type(() => Number)
@@ -119,7 +120,8 @@ export class DeliveryQueryParams {
   @ApiProperty({
     description: "Itens por página",
     required: false,
-    default: "100",
+    default: 100,
+    type: Number,
   })
   @IsOptional()
   @Type(() => Number)

@@ -41,12 +41,10 @@ export class DeliveryController {
     @Req() req: Request & { user: User },
   ): Promise<DeliveryPaginateResponse> {
     filter.user = req.user;
+    const page = Math.max(filter.page ?? 1, 1);
+    const limit = Math.max(filter.limit ?? 100, 1);
 
-    return this.deliveryService.paginate(
-      filter,
-      +Math.max(Number(filter.page) || 1, 1),
-      +Math.max(Number(filter.limit) || 100, 1),
-    );
+    return this.deliveryService.paginate(filter, page, limit);
   }
 
   @Post('simulate')

@@ -30,11 +30,16 @@ export class DeliveryService {
     limit: number
   ): Promise<DeliveryPaginateResponse> {
     const where: Prisma.DeliveryWhereInput = {
-      ...(filter.user.role !== Role.ADMIN && {
+      ...(filter.user.role === Role.COMPANY && {
         Company: {
           is: {
             idUser: filter.user.id,
           },
+        },
+      }),
+      ...(filter.user.role === Role.DELIVERY && {
+        DeliveryMan: {
+          userId: filter.user.id,
         },
       }),
       ...(filter.code && {
