@@ -37,11 +37,6 @@ export class DeliveryService {
           },
         },
       }),
-      ...(filter.user.role === Role.DELIVERY && {
-        DeliveryMan: {
-          userId: filter.user.id,
-        },
-      }),
       ...(filter.code && {
         code: {
           contains: filter.code,
