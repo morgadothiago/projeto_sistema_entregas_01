@@ -27,7 +27,9 @@ export default function Delivery() {
   const getAllDeliverys = async () => {
     try {
       const response = await api.get("/delivery", {
-        params: { status: "PENDING" },
+        params: {
+          status: "PENDING",
+        },
 
         headers: {
           Authorization: `Bearer ${token}`,
