@@ -20,6 +20,10 @@ async function bootstrap(): Promise<void> {
   app.useGlobalPipes(
     new ValidationPipe({
       exceptionFactory,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
 

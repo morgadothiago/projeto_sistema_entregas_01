@@ -1,6 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { DeliveryStatus, User } from "@prisma/client"
+import { Type } from "class-transformer"
 import {
+  IsInt,
   IsBooleanString,
   IsDateString,
   IsIn,
@@ -109,9 +111,10 @@ export class DeliveryQueryParams {
     default: "1",
   })
   @IsOptional()
-  @IsNumberString()
+  @Type(() => Number)
+  @IsInt()
   @Min(1)
-  page?: string
+  page?: number
 
   @ApiProperty({
     description: "Itens por página",
@@ -119,9 +122,10 @@ export class DeliveryQueryParams {
     default: "100",
   })
   @IsOptional()
-  @IsNumberString()
+  @Type(() => Number)
+  @IsInt()
   @Min(1)
-  limit?: string
+  limit?: number
 
   user: User
 }
