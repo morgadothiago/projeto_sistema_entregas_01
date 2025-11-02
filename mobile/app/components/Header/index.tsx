@@ -9,18 +9,27 @@ type HeaderProps = {
   onBackPress?: () => void
   tabs?: boolean
   tabsTitle?: string
+  buttonBackIcon?: boolean
 }
 
-export function Header({ title, onBackPress, tabs, tabsTitle }: HeaderProps) {
+export function Header({
+  title,
+  onBackPress,
+  tabs,
+  tabsTitle,
+  buttonBackIcon,
+}: HeaderProps) {
   return (
     <View style={[styles.container, tabs && styles.tabs]}>
-      <TouchableOpacity style={styles.button} onPress={onBackPress}>
-        <Feather
-          name="arrow-left"
-          size={35}
-          color={tabs ? colors.buttons : colors.buttons}
-        />
-      </TouchableOpacity>
+      {buttonBackIcon && (
+        <TouchableOpacity style={styles.button} onPress={onBackPress}>
+          <Feather
+            name="arrow-left"
+            size={35}
+            color={tabs ? colors.buttons : colors.buttons}
+          />
+        </TouchableOpacity>
+      )}
       <Text style={[styles.title, tabs && styles.tabsTitile]}>
         {tabs ? tabsTitle : title}
       </Text>

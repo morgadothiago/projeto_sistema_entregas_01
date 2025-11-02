@@ -26,35 +26,37 @@ const tabs: TabItem[] = [
 
 export function CustomTabs({ state, navigation }: CustomTabBarProps) {
   // Verificar se state e navigation existem para evitar erros
-  if (!state || !navigation || !state.routes) {
-    return null;
+  if (!state || !navigation || !state.routes || state.routes.length === 0) {
+    return null
   }
 
   return (
     <View style={styles.container}>
       {tabs.map((tab) => {
         // Procura a rota correspondente pelo nome (case-insensitive)
-        const route = state.routes.find(
-          (r: any) => r?.name?.toLowerCase() === tab.name.toLowerCase()
+        const found = state.routes.find(
+          (r: any) => r?.name && r.name.toLowerCase() === tab.name.toLowerCase()
         )
-        // Se não encontrar, ainda renderiza o botão sem crashar
-        const isFocused = route && state.routes && state.index !== undefined && state.routes[state.index]
-          ? route.key === state.routes[state.index]?.key
-          : false
+        const routeName = found?.name || null
+        const isFocused =
+          typeof state.index === "number" && state.routes[state.index]
+            ? routeName === state.routes[state.index]?.name
+            : false
         const isDelivery = tab.highlight
 
         const onPress = () => {
-          if (!route || !navigation) return
+          if (!routeName || !navigation) return
 
           try {
             const event = navigation.emit({
               type: "tabPress",
-              target: route.key,
+              target: found?.key,
               canPreventDefault: true,
             })
 
             if (!isFocused && !event?.defaultPrevented) {
-              navigation.navigate(tab.name)
+              // navega usando o nome exato da rota encontrada
+              navigation.navigate(routeName)
             }
           } catch (error) {
             console.log("Erro na navegação:", error)

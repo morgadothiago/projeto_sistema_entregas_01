@@ -1,59 +1,99 @@
 import React, { useEffect, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router"
-import { Text, View, StyleSheet, TouchableOpacity } from "react-native"
-import { colors } from "../theme"
+import {
+  Text,
+  View,
+  StyleSheet,
+  Linking,
+  Platform,
+  Alert,
+  ScrollView,
+} from "react-native"
+import { colors } from "@/app/theme"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { Header } from "../components/Header"
-import { ApiOrder } from "../types/order"
-
-import { ScrollView } from "react-native"
-import { api } from "../service/api"
-import { useAuth } from "../context/AuthContext"
+import { Header } from "../../components/Header"
+import { ApiOrder } from "../../types/order"
+import { api } from "../../service/api"
+import { useAuth } from "../../context/AuthContext"
+import { Button } from "../../components/Button"
+import * as Location from "expo-location"
 
 export default function DeliveryDetails() {
   const router = useRouter()
   const { code } = useLocalSearchParams()
-
-  const { token } = useAuth()
+  const { token, signOut } = useAuth()
   const [deliveryDetails, setDeliveryDetails] = useState<ApiOrder | null>(null)
 
-  // Atualiza o state com o primeiro item do array data
+  function logOut() {
+    signOut()
+  }
 
-  console.log(code)
+  useEffect(() => {
+    if (!token) {
+      logOut()
+      return
+    }
+    GetDeliveryDetails()
+  }, [token])
 
   async function GetDeliveryDetails() {
-    console.log("Entering GetDeliveryDetails function.")
     try {
-      if (!code || !token) {
-        console.warn("Code or token is missing, cannot fetch delivery details.")
-        return // Prevent API call if essential data is missing
-      }
-
-      console.log("token:", token)
-      console.log("code:", code)
+      if (!code || !token) return
 
       const response = await api.get(`/delivery`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: {
-          code: code,
-        },
+        headers: { Authorization: `Bearer ${token}` },
+        params: { code: code },
       })
-      console.log("Full API response:", response)
-      console.log("response: delivery details", response.data.data)
       setDeliveryDetails(response.data.data[0])
     } catch (error) {
       console.error("Erro ao buscar entrega:", error)
     }
   }
 
-  useEffect(() => {
-    if (!token) {
-      return router.replace("/(auth)/Signin")
+  async function handleGolMapPress() {
+    try {
+      // Pede permissão para acessar localização
+      const { status } = await Location.requestForegroundPermissionsAsync()
+      if (status !== "granted") {
+        Alert.alert(
+          "Permissão negada",
+          "Precisamos da sua localização para abrir o mapa."
+        )
+        return
+      }
+
+      // Pega a localização atual
+      const location = await Location.getCurrentPositionAsync({})
+      const originLat = location.coords.latitude
+      const originLng = location.coords.longitude
+
+      // Destino da entrega (pega do deliveryDetails se existir)
+      const destination = {
+        latitude: -23.642533369211442,
+        longitude: -46.732898531204846,
+      }
+
+      if (Platform.OS === "ios") {
+        // iOS: abre Apple Maps
+        const appleUrl = `http://maps.apple.com/?saddr=${originLat},${originLng}&daddr=${destination.latitude},${destination.longitude}&dirflg=d`
+        Linking.openURL(appleUrl)
+      } else {
+        // Android: tenta abrir Google Maps nativo
+        const googleUrl = `google.navigation:q=${destination.latitude},${destination.longitude}&mode=d`
+        const supported = await Linking.canOpenURL(googleUrl)
+        if (supported) {
+          Linking.openURL(googleUrl)
+        } else {
+          // fallback web
+          const webUrl = `https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLng}&destination=${destination.latitude},${destination.longitude}&travelmode=driving`
+          Linking.openURL(webUrl)
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao abrir o mapa:", error)
+      Alert.alert("Erro", "Não foi possível abrir o mapa.")
     }
-    GetDeliveryDetails()
-  }, [token])
+  }
 
   if (!deliveryDetails) {
     return (
@@ -76,7 +116,6 @@ export default function DeliveryDetails() {
   return (
     <SafeAreaView style={localStyles.container}>
       <Header title="Detalhes da Entrega" />
-
       <View style={localStyles.content}>
         <Text style={localStyles.message}>{deliveryDetails.Company?.name}</Text>
 
@@ -126,11 +165,16 @@ export default function DeliveryDetails() {
               {statusLabel}
             </Text>
           </View>
-        </ScrollView>
 
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={{ color: colors.buttons }}>Voltar</Text>
-        </TouchableOpacity>
+          <Button
+            title="Ver no mapa"
+            onPress={handleGolMapPress}
+            style={localStyles.button}
+            icon="map-pin"
+            sizeIcon={20}
+            colorIcon={colors.secondary}
+          />
+        </ScrollView>
       </View>
     </SafeAreaView>
   )
@@ -169,5 +213,21 @@ const localStyles = StyleSheet.create({
   message: {
     marginBottom: 12,
     color: colors.secondary,
+  },
+  button: {
+    marginTop: 16,
+    marginBottom: 16,
+    backgroundColor: colors.active,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+  buttonText: {
+    color: colors.primary,
+    fontSize: 16,
+    fontWeight: "bold",
   },
 })

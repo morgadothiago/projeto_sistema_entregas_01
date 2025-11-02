@@ -10,41 +10,47 @@ import { colors } from "../theme"
 import { ApiOrder } from "../types/order"
 
 export default function Delivery() {
-  const { token } = useAuth()
-
-  useEffect(() => {
-    if (!token) {
-      return router.replace("/(auth)/Signin")
-    }
-    getAllDeliverys()
-  }, [token])
+  const { token, loading } = useAuth()
 
   const router = useRouter()
   const [orders, setOrders] = useState<ApiOrder[]>([])
 
-  console.log("token:", token)
+  useEffect(() => {
+    let mounted = true
 
-  const getAllDeliverys = async () => {
-    try {
-      const response = await api.get("/delivery", {
-        params: {
-          status: "PENDING",
-        },
+    // não faz nada enquanto o auth ainda carrega o estado inicial
+    if (loading) return
 
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      console.log("response:", response.data)
-      setOrders(response.data.data)
-    } catch (error) {
-      console.error("Erro ao buscar entregas:", error)
+    if (!token) {
+      // redireciona para a tela de login se não houver token
+      router.replace("/(auth)/Signin")
+      return
     }
-  }
+
+    ;(async () => {
+      try {
+        const response = await api.get("/delivery", {
+          params: { status: "PENDING" },
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!mounted) return
+        console.log("response:", response.data)
+        setOrders(response.data.data)
+      } catch (error) {
+        console.error("Erro ao buscar entregas:", error)
+      }
+    })()
+
+    return () => {
+      mounted = false
+    }
+  }, [token, router, loading])
+
+  console.log("token:", token)
 
   const handleOpenDetails = (order: ApiOrder) => {
     router.push({
-      pathname: "/deliveryDetails",
+      pathname: "/(tabs)/Delivery/deliveryDetails",
       params: { code: order.code },
     })
   }
