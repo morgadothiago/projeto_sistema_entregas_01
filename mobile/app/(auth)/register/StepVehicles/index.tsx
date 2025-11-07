@@ -60,9 +60,7 @@ export default function VehiclesInfo() {
   async function loadVehicleData() {
     try {
       setLoading(true)
-      const response = await api.get("/vehicle-types", {
-        params: { page, limit },
-      })
+      const response = await api.get("/vehicle-types")
       const data = Array.isArray(response.data?.data) ? response.data.data : []
 
       const formattedOptions = data.map(

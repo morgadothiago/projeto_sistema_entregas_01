@@ -27,27 +27,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Edit,
-  Plus,
-  Search,
-  Filter,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-} from "lucide-react"
+
+import { DollarSign } from "lucide-react"
 import {
   EBillingStatus,
   EBillingType,
   FilteredBillings,
-  NewBilling,
 } from "@/app/types/Billing"
 import DialogModal from "@/app/components/DialogModal"
 

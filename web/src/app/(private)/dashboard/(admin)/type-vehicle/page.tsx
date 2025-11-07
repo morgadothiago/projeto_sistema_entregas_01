@@ -42,11 +42,13 @@ import {
 } from "lucide-react"
 import React, { useEffect, useState } from "react"
 import { toast } from "sonner"
+import { signOut } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 export default function page() {
-  const { token } = useAuth()
+  const { token, loading } = useAuth()
   const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([])
-  const [loading, setLoading] = useState(true)
+  const [isLoading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   // Estados de paginação
@@ -73,21 +75,44 @@ export default function page() {
   })
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const isAuthenticated = !loading && !!token
+
+  const router = useRouter()
+  useEffect(() => {
+    if (!loading && !token) {
+      signOut()
+      router.push("/signin")
+    } else if (isAuthenticated) {
+      setMounted(true)
+    }
+  }, [loading, token])
 
   useEffect(() => {
+    if (!isAuthenticated || !mounted) return
     getAllVehicleTypes()
-  }, [currentPage, itemsPerPage])
-
-  // Reset para primeira página quando mudar o número de itens por página
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [itemsPerPage])
+  }, [isAuthenticated, mounted, currentPage, itemsPerPage])
 
   async function getAllVehicleTypes() {
+    console.log("Token recebido em getAllVehicleTypes:", token)
+    if (!token) {
+      toast.error("Token não encontrado. Faça login novamente.", {
+        duration: 5000,
+        position: "top-center",
+      })
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
-      const response = await api.getAllVehicleType(currentPage, itemsPerPage)
+      const response = await api.getAllVehicleType(
+        currentPage,
+        itemsPerPage,
+        token as string
+      )
+
+      console.log("Resposta da API:", response.data)
 
       // Verifica se é uma resposta de erro ou sucesso
       if (response && "message" in response) {
@@ -289,6 +314,7 @@ export default function page() {
           "Por favor, preencha todos os campos obrigatórios com valores numéricos válidos.",
           { duration: 5000, position: "top-center" }
         )
+        setIsSubmitting(false)
         return
       }
 
@@ -303,6 +329,7 @@ export default function page() {
           duration: 5000,
           position: "top-center",
         })
+        setIsSubmitting(false)
         return
       }
 
@@ -311,6 +338,7 @@ export default function page() {
           duration: 5000,
           position: "top-center",
         })
+        setIsSubmitting(false)
         return
       }
 
@@ -320,23 +348,11 @@ export default function page() {
 
       if (isEditing && editingVehicleType) {
         // Monta o objeto apenas com campos válidos
-        const data: any = {
-          tarifaBase: formData.tarifaBase,
-          valorKMAdicional: formData.valorKMAdicional,
-          paradaAdicional: formData.paradaAdicional,
-          ajudanteAdicional: formData.ajudanteAdicional,
-        }
-        // Só envie 'type' se o usuário alterou o nome
-        if (formData.type && formData.type !== editingVehicleType.type) {
-          data.type = formData.type.trim()
-        }
-        // Remove campos indefinidos ou nulos
-        Object.keys(data).forEach(
-          (key) =>
-            (data[key] === undefined || data[key] === null) && delete data[key]
+        await api.updateVehicleType(
+          editingVehicleType.type,
+          formData,
+          cleanToken
         )
-        console.log("Enviando para o update:", data)
-        await api.updateVehicleType(editingVehicleType.type, data, cleanToken)
       } else {
         const vehicleTypeData = {
           type: formData.type.trim(),
@@ -475,6 +491,10 @@ export default function page() {
         </div>
       </div>
     )
+  }
+
+  if (!mounted) {
+    return null
   }
 
   return (

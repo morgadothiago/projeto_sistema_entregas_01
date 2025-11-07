@@ -19,6 +19,7 @@ import { useAuth } from "../../context/AuthContext"
 import { Feather } from "@expo/vector-icons"
 // botão customizado removido (usamos TouchableOpacity para ações nesta tela)
 import * as Location from "expo-location"
+// Clipboard import dinamico no handleCopyCode (evita erro se pacote não estiver instalado)
 
 export default function DeliveryDetails() {
   const insets = useSafeAreaInsets()
@@ -42,7 +43,16 @@ export default function DeliveryDetails() {
           params: { code: code },
         })
         if (cancelled) return
-        setDeliveryDetails(response.data.data[0])
+        const order = response.data.data[0]
+        if (order) {
+          if (order.ClientAddress && Array.isArray(order.ClientAddress)) {
+            order.ClientAddress = order.ClientAddress[0]
+          }
+          if (order.OriginAddress && Array.isArray(order.OriginAddress)) {
+            order.OriginAddress = order.OriginAddress[0]
+          }
+        }
+        setDeliveryDetails(order)
       } catch (error) {
         console.error("Erro ao buscar entrega:", error)
       }
@@ -53,6 +63,10 @@ export default function DeliveryDetails() {
       cancelled = true
     }
   }, [token, code, signOut])
+
+  function handleAceptPress() {
+    console.log("Aceitar entrega")
+  }
 
   async function handleGolMapPress() {
     try {
@@ -99,6 +113,16 @@ export default function DeliveryDetails() {
     }
   }
 
+  function formatPhone(raw?: string) {
+    if (!raw) return undefined
+    const digits = raw.replace(/\D/g, "")
+    if (digits.length === 11)
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+    if (digits.length === 10)
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
+    return raw
+  }
+
   function handleCheckoutPress() {
     console.log("Finalizar entrega")
   }
@@ -127,7 +151,7 @@ export default function DeliveryDetails() {
           <View style={localStyles.headerCard}>
             <View style={localStyles.headerLeft}>
               <Text style={localStyles.companyName}>
-                {deliveryDetails.Company?.name}
+                {deliveryDetails.Company?.name ?? "-"}
               </Text>
               <Text style={localStyles.smallText}>{deliveryDetails.code}</Text>
             </View>
@@ -159,22 +183,38 @@ export default function DeliveryDetails() {
           </View>
 
           {/* Card: detalhes do pedido */}
-          <View style={localStyles.card}>
-            <Text style={localStyles.cardTitle}>Detalhes da Encomenda</Text>
+          <View style={[localStyles.card, localStyles.cardElevated]}>
+            <View style={localStyles.cardHeaderRow}>
+              <Text style={localStyles.cardTitle}>Detalhes da Encomenda</Text>
+            </View>
 
-            <DetailRow label="Empresa" value={deliveryDetails.Company?.name} />
-            <DetailRow
-              label="Endereço"
-              value={deliveryDetails.Company?.andress}
-            />
-            <DetailRow
-              label="Telefone"
-              value={deliveryDetails.Company?.phone}
-            />
-            <DetailRow
-              label="Tipo de Veículo"
-              value={deliveryDetails.vehicleType}
-            />
+            {Array.isArray(deliveryDetails.ClientAddress) &&
+            deliveryDetails.ClientAddress.length > 0 ? (
+              <DetailRow
+                label="Endereço do Cliente"
+                value={deliveryDetails.ClientAddress.map(
+                  (addr) =>
+                    `${addr.street}, ${addr.number}, ${addr.city} - ${addr.state}, ${addr.zipCode}`
+                ).join("; ")}
+              />
+            ) : deliveryDetails.ClientAddress &&
+              !Array.isArray(deliveryDetails.ClientAddress) ? (
+              <DetailRow
+                label="Endereço do Cliente"
+                value={`${deliveryDetails.ClientAddress.street}, ${deliveryDetails.ClientAddress.number}, ${deliveryDetails.ClientAddress.city} - ${deliveryDetails.ClientAddress.state}, ${deliveryDetails.ClientAddress.zipCode}`}
+              />
+            ) : (
+              <DetailRow label="Endereço do Cliente" value="Não disponível" />
+            )}
+
+            <View style={localStyles.inlineRow}>
+              <DetailRow
+                label="Telefone"
+                value={formatPhone(
+                  deliveryDetails.Company?.phone ?? deliveryDetails.telefone
+                )}
+              />
+            </View>
 
             <View style={localStyles.rowGroup}>
               <DetailRow
@@ -198,7 +238,7 @@ export default function DeliveryDetails() {
           <View
             style={{
               marginTop: 24,
-              marginBottom: 2,
+              marginBottom: 12,
               flexDirection: "row",
               alignItems: "center",
               gap: 8,
@@ -211,28 +251,40 @@ export default function DeliveryDetails() {
           <View
             style={[
               localStyles.footer,
+
               { paddingBottom: insets.bottom ? insets.bottom + 18 : 16 },
             ]}
           >
-            <TouchableOpacity
-              style={localStyles.footerButton}
-              onPress={handleGolMapPress}
-            >
-              <Text style={localStyles.footerButtonText}>Ver no mapa</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[localStyles.footerButton, localStyles.primaryButton]}
-              onPress={handleCheckoutPress}
-            >
-              <Text
-                style={[
-                  localStyles.footerButtonText,
-                  { color: colors.primary },
-                ]}
+            {deliveryDetails.status === "IN_PROGRESS" ? (
+              <>
+                <TouchableOpacity
+                  style={localStyles.footerButton}
+                  onPress={handleGolMapPress}
+                >
+                  <Text style={localStyles.footerButtonText}>Ver no mapa</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[localStyles.footerButton, localStyles.primaryButton]}
+                  onPress={handleCheckoutPress}
+                >
+                  <Text
+                    style={[
+                      localStyles.footerButtonText,
+                      { color: colors.primary },
+                    ]}
+                  >
+                    Finalizar Entrega
+                  </Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <TouchableOpacity
+                style={localStyles.footerButton}
+                onPress={handleAceptPress}
               >
-                Finalizar Entrega
-              </Text>
-            </TouchableOpacity>
+                <Text style={localStyles.footerButtonText}>Aceitar</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </ScrollView>
 
@@ -320,6 +372,33 @@ const localStyles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
   },
+  cardElevated: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  cardHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  copyButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "transparent",
+  },
+  inlineRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  callInline: {
+    padding: 8,
+    marginLeft: 8,
+  },
   cardTitle: {
     fontSize: 16,
     fontWeight: "700",
@@ -394,6 +473,7 @@ const localStyles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     justifyContent: "space-between",
+    marginTop: 20,
   },
   footerButton: {
     flex: 1,

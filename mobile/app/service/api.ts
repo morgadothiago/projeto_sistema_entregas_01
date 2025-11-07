@@ -16,10 +16,7 @@ interface LoginResponse {
 
 // -------------------- INSTÂNCIA AXIOS --------------------
 const api = Axios.create({
-  baseURL:
-    process.env.DEVELOPMENT_BASE_URL ||
-    process.env.PRODUCTION_BASE_URL ||
-    "http://localhost:3000",
+  baseURL: "http://192.168.100.96:3000",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",

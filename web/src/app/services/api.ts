@@ -30,7 +30,7 @@ class ApiService {
 
   constructor() {
     this.api = Axios.create({
-      baseURL: process.env.NEXT_PUBLIC_NEXTAUTH_API_HOST || "",
+      baseURL: "http://localhost:3000",
     })
 
     // Interceptador de resposta para tratar erros 401
@@ -135,15 +135,20 @@ class ApiService {
 
   async getAllVehicleType(
     page: number = 1,
-    limit: number = 10
+    limit: number = 100,
+    token: string
   ): Promise<IPaginateResponse<VehicleType> | IErrorResponse> {
+    const authToken = token.startsWith("Bearer ") ? token : `Bearer ${token}`
+
     return this.api
       .get("/vehicle-types", {
-        params: { page, limit },
+        params: { pageNumber: page, pageSize: limit }, // ⬅️ AQUI!!
+        headers: { Authorization: authToken },
       })
       .then(this.getResponse<IPaginateResponse<VehicleType>>)
       .catch(this.getError)
   }
+
   async getDeliveryDetail(code: string, token: string, socketId?: string) {
     const authToken = token.startsWith("Bearer ") ? token : `Bearer ${token}`
     return this.api
