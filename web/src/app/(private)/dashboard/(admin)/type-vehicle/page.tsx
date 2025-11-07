@@ -44,9 +44,30 @@ import React, { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import DialogModal from "@/app/components/DialogModal"
+import { FormProvider, useForm } from "react-hook-form"
+import { RHFTextInput } from "@/app/components/Input/ RHFTextInput"
+
+export interface VehicleTypeForm {
+  type: string
+  tarifaBase: number
+  valorKMAdicional: number
+  paradaAdicional: number
+  ajudanteAdicional: number
+}
 
 export default function page() {
   const { token, loading } = useAuth()
+  const methods = useForm<VehicleTypeForm>({
+    defaultValues: {
+      type: "",
+      tarifaBase: 0,
+      valorKMAdicional: 0,
+      paradaAdicional: 0,
+      ajudanteAdicional: 0,
+    },
+  })
+
   const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([])
   const [isLoading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -203,14 +224,15 @@ export default function page() {
   function handleAddNewVehicleType() {
     setIsEditing(false)
     setEditingVehicleType(null)
-    setFormData({
+
+    methods.reset({
       type: "",
       tarifaBase: 0,
       valorKMAdicional: 0,
       paradaAdicional: 0,
       ajudanteAdicional: 0,
     })
-    setFormErrors({})
+
     setIsModalOpen(true)
   }
 
@@ -789,6 +811,7 @@ export default function page() {
         )}
 
         {/* Modal para Adicionar/Editar */}
+
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
@@ -805,156 +828,73 @@ export default function page() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="type">Nome do Tipo *</Label>
-                <Input
-                  id="type"
-                  placeholder="Ex: Carro, Moto, Utilitário..."
-                  value={formData.type}
-                  onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
-                  }
-                  className={formErrors.type ? "border-red-500" : ""}
-                />
-                {formErrors.type && (
-                  <p className="text-red-500 text-sm">{formErrors.type}</p>
-                )}
-              </div>
+            <form
+              {...methods}
+              onSubmit={methods.handleSubmit(handleSubmit)}
+              className="space-y-4"
+            >
+              <RHFTextInput
+                name="type"
+                labelName="Nome do Tipo *"
+                placeholder="Ex: Carro, Moto, Caminhão..."
+                required
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="tarifaBase">Tarifa Base (R$) *</Label>
-                  <Input
-                    id="tarifaBase"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    value={formData.tarifaBase}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        tarifaBase: Number(e.target.value),
-                      })
-                    }
-                    className={formErrors.tarifaBase ? "border-red-500" : ""}
-                  />
-                  {formErrors.tarifaBase && (
-                    <p className="text-red-500 text-sm">
-                      {formErrors.tarifaBase}
-                    </p>
-                  )}
-                </div>
+                <RHFTextInput
+                  name="tarifaBase"
+                  labelName="Tarifa Base (R$) *"
+                  type="number"
+                  placeholder="0.00"
+                />
 
-                <div className="grid gap-2">
-                  <Label htmlFor="valorKMAdicional">
-                    Valor por KM Adicional (R$) *
-                  </Label>
-                  <Input
-                    id="valorKMAdicional"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    value={formData.valorKMAdicional}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        valorKMAdicional: Number(e.target.value),
-                      })
-                    }
-                    className={
-                      formErrors.valorKMAdicional ? "border-red-500" : ""
-                    }
-                  />
-                  {formErrors.valorKMAdicional && (
-                    <p className="text-red-500 text-sm">
-                      {formErrors.valorKMAdicional}
-                    </p>
-                  )}
-                </div>
+                <RHFTextInput
+                  name="valorKMAdicional"
+                  labelName="Valor por KM Adicional (R$) *"
+                  type="number"
+                  placeholder="0.00"
+                />
 
-                <div className="grid gap-2">
-                  <Label htmlFor="paradaAdicional">
-                    Valor por Parada Adicional (R$) *
-                  </Label>
-                  <Input
-                    id="paradaAdicional"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    value={formData.paradaAdicional}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        paradaAdicional: Number(e.target.value),
-                      })
-                    }
-                    className={
-                      formErrors.paradaAdicional ? "border-red-500" : ""
-                    }
-                  />
-                  {formErrors.paradaAdicional && (
-                    <p className="text-red-500 text-sm">
-                      {formErrors.paradaAdicional}
-                    </p>
-                  )}
-                </div>
+                <RHFTextInput
+                  name="paradaAdicional"
+                  labelName="Valor por Parada Adicional (R$) *"
+                  type="number"
+                  placeholder="0.00"
+                />
 
-                <div className="grid gap-2">
-                  <Label htmlFor="ajudanteAdicional">
-                    Valor por Ajudante Adicional (R$) *
-                  </Label>
-                  <Input
-                    id="ajudanteAdicional"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    value={formData.ajudanteAdicional}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        ajudanteAdicional: Number(e.target.value),
-                      })
-                    }
-                    className={
-                      formErrors.ajudanteAdicional ? "border-red-500" : ""
-                    }
-                  />
-                  {formErrors.ajudanteAdicional && (
-                    <p className="text-red-500 text-sm">
-                      {formErrors.ajudanteAdicional}
-                    </p>
-                  )}
-                </div>
+                <RHFTextInput
+                  name="ajudanteAdicional"
+                  labelName="Valor por Ajudante Adicional (R$) *"
+                  type="number"
+                  placeholder="0.00"
+                />
               </div>
-            </div>
 
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsModalOpen(false)}
-                disabled={isSubmitting}
-              >
-                <X className="h-4 w-4 mr-2" />
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {isSubmitting
-                  ? "Salvando..."
-                  : isEditing
-                  ? "Atualizar"
-                  : "Criar"}
-              </Button>
-            </DialogFooter>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsModalOpen(false)}
+                  disabled={isSubmitting}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Cancelar
+                </Button>
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isSubmitting
+                    ? "Salvando..."
+                    : isEditing
+                    ? "Atualizar"
+                    : "Criar"}
+                </Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
