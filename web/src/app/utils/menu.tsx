@@ -6,12 +6,23 @@ import {
   RefreshCcw,
   Bell,
   Mail,
-  Settings,
   Store,
+  LucideIcon,
 } from "lucide-react"
 import { FaWhatsapp } from "react-icons/fa"
 
-export const items = [
+export interface MenuItem {
+  title: string
+  subTile: string
+  url: string
+  icon: LucideIcon
+  badge?: number
+}
+
+// Exemplo mockado de notificações
+const NotificationItems = 3
+
+export const items: MenuItem[] = [
   {
     title: "Home",
     subTile: "Home",
@@ -21,7 +32,6 @@ export const items = [
   {
     title: "simulate",
     subTile: "Simulação de entrega",
-
     url: "simulate",
     icon: RefreshCcw,
   },
@@ -42,19 +52,20 @@ export const items = [
     subTile: "Notificações",
     url: "/notification",
     icon: Bell,
+    badge: NotificationItems, // 👈 Aqui controla o badge
   },
 ]
 
-export const itemAdm = [
+export const itemAdm: MenuItem[] = [
   {
     title: "/admin/type-vehicle",
-    subTile: "Tipo de veiculos",
+    subTile: "Tipo de Veículos",
     url: "/type-vehicle",
     icon: Car,
   },
   {
     title: "/admin/listuser",
-    subTile: "Listagem de Usuario",
+    subTile: "Listagem de Usuários",
     url: "/user",
     icon: User,
   },
@@ -64,21 +75,24 @@ export const itemAdm = [
     url: "/stores",
     icon: Store,
   },
+  {
+    title: "/admin/notification_admin",
+    subTile: "Notificações_admin",
+    url: "/notification_admin",
+    icon: Bell,
+    badge: NotificationItems, // 👈 Aqui também
+  },
 ]
 
 export const itemSupport = [
   {
     title: "Email",
-    action: () => {
-      // Add your email action logic here
-    },
+    action: () => {},
     icon: Mail,
   },
   {
     title: "WhatsApp",
-    action: () => {
-      // Add your WhatsApp action logic here
-    },
+    action: () => {},
     icon: FaWhatsapp,
   },
 ]

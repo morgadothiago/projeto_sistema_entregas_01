@@ -20,9 +20,12 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/app/context"
 import Image from "next/image"
 import logoMarcaSimbol from "../../../../public/Logo.png"
+import BadgeIcon from "../Badger"
+import { useNotification } from "@/app/context/Notification"
 
 export function SideBar() {
   const { user } = useAuth()
+  const { notifications } = useNotification()
   const [selectedItem, setSelectedItem] = useState<string | null>(null)
   const router = useRouter()
   const { setOpenMobile } = useSidebar()
@@ -68,28 +71,26 @@ export function SideBar() {
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1">
-                  {items.map((item) => (
-                    <SidebarMenuItem
-                      key={item.title}
-                      className={`transition-all duration-200 rounded-xl ${
-                        selectedItem === item.title
-                          ? "bg-white/95 text-[#003B73] shadow-lg transform scale-[1.02]"
-                          : "text-white hover:bg-white/10 hover:transform hover:scale-[1.02]"
-                      }`}
-                    >
-                      <SidebarMenuButton asChild>
-                        <a
-                          onClick={() => handleNextPage(item.url)}
-                          className="flex items-center p-3 w-full"
-                        >
-                          <item.icon className="mr-3 flex-shrink-0 w-5 h-5" />
-                          <span className="text-[15px] font-medium truncate">
-                            {item.subTile}
-                          </span>
-                        </a>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                  {items.map((item) => {
+                    const badgeValue =
+                      item.title === "/admin/notification"
+                        ? notifications
+                        : item.badge
+
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton asChild>
+                          <a
+                            onClick={() => handleNextPage(item.url)}
+                            className="flex items-center gap-3 p-3 text-white hover:bg-white/10 rounded-lg transition"
+                          >
+                            <BadgeIcon icon={item.icon} badge={badgeValue} />
+                            <span>{item.subTile}</span>
+                          </a>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -101,30 +102,29 @@ export function SideBar() {
               <SidebarGroupLabel className="text-lg text-white/90 font-semibold mb-3">
                 Administrativa
               </SidebarGroupLabel>
+
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1">
-                  {itemAdm.map((item) => (
-                    <SidebarMenuItem
-                      key={item.title}
-                      className={`transition-all duration-200 rounded-xl ${
-                        selectedItem === item.subTile
-                          ? "bg-white/95 text-[#003B73] shadow-lg transform scale-[1.02]"
-                          : "text-white hover:bg-white/10 hover:transform hover:scale-[1.02]"
-                      }`}
-                    >
-                      <SidebarMenuButton asChild>
-                        <a
-                          onClick={() => handleNextPage(item.url)}
-                          className="flex items-center p-3 w-full"
-                        >
-                          <item.icon className="mr-2 flex-shrink-0" />
-                          <span className="text-sm md:text-sm truncate">
-                            {item.subTile}
-                          </span>
-                        </a>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                  {itemAdm.map((item) => {
+                    const badgeValue =
+                      item.title === "/admin/notification"
+                        ? notifications
+                        : item.badge
+
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton asChild>
+                          <a
+                            onClick={() => handleNextPage(item.url)}
+                            className="flex items-center gap-3 p-3 text-white hover:bg-white/10 rounded-lg transition"
+                          >
+                            <BadgeIcon icon={item.icon} badge={badgeValue} />
+                            <span>{item.subTile}</span>
+                          </a>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

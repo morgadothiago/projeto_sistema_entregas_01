@@ -538,7 +538,7 @@ export default function page() {
         {/* Filtros */}
         {showFilters && (
           <Card className="mb-6">
-            <CardContent className="p-6">
+            <CardContent className="p-6 justify-b">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -606,7 +606,7 @@ export default function page() {
                   key={vehicleType.id}
                   className="group hover:shadow-lg transition-all duration-300 border-0 shadow-md"
                 >
-                  <CardHeader className="pb-4">
+                  <CardHeader className="pb-">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
@@ -827,7 +827,7 @@ export default function page() {
                   <Label htmlFor="tarifaBase">Tarifa Base (R$) *</Label>
                   <Input
                     id="tarifaBase"
-                    type="number"
+                    type="text"
                     step="0.01"
                     min="0"
                     placeholder="0.00"
@@ -853,7 +853,7 @@ export default function page() {
                   </Label>
                   <Input
                     id="valorKMAdicional"
-                    type="number"
+                    type="text"
                     step="0.01"
                     min="0"
                     placeholder="0.00"
@@ -881,7 +881,7 @@ export default function page() {
                   </Label>
                   <Input
                     id="paradaAdicional"
-                    type="number"
+                    type="text"
                     step="0.01"
                     min="0"
                     placeholder="0.00"
@@ -909,7 +909,7 @@ export default function page() {
                   </Label>
                   <Input
                     id="ajudanteAdicional"
-                    type="number"
+                    type="text"
                     step="0.01"
                     min="0"
                     placeholder="0.00"
